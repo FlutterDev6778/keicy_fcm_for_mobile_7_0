@@ -1,4 +1,4 @@
-library keicy_fcm_for_mobile;
+library keicy_fcm_for_mobile_7_0;
 
 import 'dart:async';
 import 'dart:convert';

@@ -1,4 +1,4 @@
-name: keicy_fcm_for_mobile
+name: keicy_fcm_for_mobile_7_0
 description: A new Flutter package project.
 version: 0.0.1
 author:
@@ -10,10 +10,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
+
   firebase_messaging: ^7.0.0
   http: ^0.12.2
-
 
 dev_dependencies:
   flutter_test:
