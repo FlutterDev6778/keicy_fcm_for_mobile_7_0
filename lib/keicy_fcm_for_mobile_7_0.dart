@@ -12,20 +12,18 @@ class KeicyFCMForMobile {
   static final KeicyFCMForMobile _instance = KeicyFCMForMobile();
   static KeicyFCMForMobile get instance => _instance;
 
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  BuildContext _context;
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   String _serverToken;
+  String token;
 
-  static Future<dynamic> _myBackgroundMessageHandler(Map<String, dynamic> message) async {
-    if (message.containsKey('data')) {
-      final dynamic data = message['data'];
-    } else if (message.containsKey('notification')) {
-      final dynamic notification = message['notification'];
-    } else {}
+  StreamController<Map<String, dynamic>> _controller = StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get stream => _controller.stream;
+
+  void close() {
+    _controller?.close();
   }
 
-  Future<void> init({@required BuildContext context, @required String serverToken}) async {
-    _context = context;
+  Future<void> init({@required String serverToken}) async {
     _serverToken = serverToken;
     if (Platform.isIOS) {
       _firebaseMessaging.requestNotificationPermissions(const IosNotificationSettings(sound: true, badge: true, alert: true));
@@ -35,24 +33,33 @@ class KeicyFCMForMobile {
     }
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        _showItemDialog(message);
+        _controller.add(message);
       },
       onBackgroundMessage: Platform.isIOS ? null : _myBackgroundMessageHandler,
       onResume: (Map<String, dynamic> message) async {
-        print("onResume");
+        _controller.add(message);
       },
       onLaunch: (Map<String, dynamic> message) async {
-        print("onLaunch");
+        _controller.add(message);
       },
     );
   }
 
-  Future<String> getToken() async {
+  Future<dynamic> _myBackgroundMessageHandler(Map<String, dynamic> message) async {
+    _controller.add(message);
+    if (message.containsKey('data')) {
+      final dynamic data = message['data'];
+    } else if (message.containsKey('notification')) {
+      final dynamic notification = message['notification'];
+    } else {}
+  }
+
+  void getToken() async {
     try {
-      var token = await _firebaseMessaging.getToken();
-      return token;
+      token = await _firebaseMessaging.getToken();
+      return;
     } catch (e) {
-      return "-1";
+      return;
     }
   }
 
@@ -73,56 +80,5 @@ class KeicyFCMForMobile {
       ),
     );
     return json.decode(response.body);
-  }
-
-  void _showItemDialog(Map<String, dynamic> message) {
-    showDialog<bool>(
-      context: _context,
-      builder: (_) => _buildDialog(_context, message),
-    ).then((bool shouldNavigate) {
-      if (shouldNavigate == true) {
-        // _navigateToItemDetail(message);
-      }
-    }).catchError((e) {
-      print(e);
-    });
-  }
-
-  // void _navigateToItemDetail(Map<String, dynamic> message) {
-  //   final Item item = _itemForMessage(message);
-  //   // Clear away dialogs
-  //   Navigator.popUntil(context, (Route<dynamic> route) => route is PageRoute);
-  //   if (!item.route.isCurrent) {
-  //     Navigator.push(context, item.route);
-  //   }
-  // }
-}
-
-Widget _buildDialog(BuildContext context, Map<String, dynamic> message) {
-  try {
-    return AlertDialog(
-      content: RichText(
-        textAlign: TextAlign.center,
-        text: TextSpan(
-          style: TextStyle(color: Colors.black, height: 2),
-          children: <TextSpan>[
-            TextSpan(text: message["notification"]["title"], style: TextStyle(color: Colors.black, fontSize: 20)),
-            TextSpan(text: "\n", style: TextStyle(color: Colors.black, fontSize: 20)),
-            TextSpan(text: message["notification"]["body"], style: TextStyle(color: Colors.black, fontSize: 16))
-          ],
-        ),
-      ),
-      actions: <Widget>[
-        FlatButton(
-          child: const Text('CLOSE'),
-          onPressed: () {
-            Navigator.pop(context, false);
-          },
-        ),
-      ],
-    );
-  } catch (e) {
-    print(e);
-    return SizedBox();
   }
 }
