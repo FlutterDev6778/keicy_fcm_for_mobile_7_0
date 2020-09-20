@@ -54,7 +54,7 @@ class KeicyFCMForMobile {
     } else {}
   }
 
-  void getToken() async {
+  Future<void> getToken() async {
     try {
       token = await _firebaseMessaging.getToken();
       return;
