@@ -17,6 +17,7 @@ class KeicyFCMForMobile {
   String token;
 
   StreamController<Map<String, dynamic>> _controller = StreamController<Map<String, dynamic>>.broadcast();
+  StreamController<Map<String, dynamic>> get controller => _controller;
   Stream<Map<String, dynamic>> get stream => _controller.stream;
 
   void close() {
