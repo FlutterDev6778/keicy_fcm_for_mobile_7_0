@@ -47,7 +47,7 @@ class KeicyFCMForMobile {
   }
 
   static Future<dynamic> _myBackgroundMessageHandler(Map<String, dynamic> message) async {
-    _instance.controller.add(message);
+    _instance._controller.add(message);
     if (message.containsKey('data')) {
       final dynamic data = message['data'];
     } else if (message.containsKey('notification')) {
